@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum status {
+  ORDERED
+  CONFIRMED
+  DELIVERED
+  FINISHED
+}
+
+model Seller {
+  id         Int       @id @default(autoincrement())
+  username   String
+  email      String    @unique
+  password   String
+  reputation Float
+  income     Float
+  products   Product[]
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  username     String
+  email        String        @unique
+  password     String
+  leaderboard  Leaderboard?
+  reviews      Review[]
+  transactions Transaction[]
+  addresses    Address[]
+  vouchers     Voucher[]     @relation("UserVouchers")
+}
+
+model Admin {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  password String
+  products Product[]
+}
+
+model Product {
+  id           Int           @id @default(autoincrement())
+  name         String
+  price        Float
+  description  String
+  green_score  Float
+  avg_rating   Float
+  certificates String
+  stock        Int
+  adminId      Int?
+  admin        Admin?        @relation(fields: [adminId], references: [id])
+  sellerId     Int
+  seller       Seller        @relation(fields: [sellerId], references: [id])
+  reviews      Review[]
+  Transaction  Transaction[]
+}
+
+model Leaderboard {
+  userId    Int      @id
+  score     Float
+  username  String
+  updatedAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Review {
+  id        Int     @id @default(autoincrement())
+  rating    Float
+  comment   String
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Transaction {
+  id           Int      @id @default(autoincrement())
+  purchaseDate DateTime
+  amount       Float
+  status       status
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id])
+}
+
+model Address {
+  id         Int    @id @default(autoincrement())
+  street     String
+  city       String
+  country    String
+  postalCode Int
+  userId     Int
+  user       User   @relation(fields: [userId], references: [id])
+}
+
+model Voucher {
+  id       Int    @id @default(autoincrement())
+  code     String @unique // Unique voucher code
+  discount Float
+  users    User[] @relation("UserVouchers") // Many-to-many relation with User
+}

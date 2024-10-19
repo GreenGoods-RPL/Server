@@ -14,6 +14,6 @@ app.use((req, res) => {
     res.status(404).json({message:"404 Not Found"});
 });
 
-app.listen(8008, () => {
-    console.log("Server has started 🚀");
+app.listen(process.env.PORT, () => {
+    console.log("Server is running 🚀");
 })
