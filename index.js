@@ -2,10 +2,16 @@ const express = require("express");
 const morgan = require("morgan");
 require("dotenv").config();
 
+const productRoute = require('./src/routes/productRoute');
+
 const app = express();
 
 app.use(express.json());
 app.use(morgan("combined"));
+
+//routes
+app.use('/api', productRoute);  // Ini akan menangani semua routes termasuk auth
+
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
