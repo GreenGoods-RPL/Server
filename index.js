@@ -3,17 +3,17 @@ const morgan = require("morgan");
 require("dotenv").config();
 
 const authRoute = require('./src/routes/authRoute');
-
 const sellerRoute = require("./src/routes/sellerRoute");
+const userRoute = require("./src/routes/userRoute");
 
 const app = express();
 
 app.use(express.json());
 app.use(morgan("combined"));
-app.use("/api", sellerRoute);
 
 app.use('/api/auth', authRoute);
-app.use('/api/user', authRoute);
+app.use("/api/seller", sellerRoute);
+app.use('/api/user', userRoute);
 
 app.get("/", (req, res) => {
     res.send("Hello World!");
