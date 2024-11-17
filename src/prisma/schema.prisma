@@ -13,11 +13,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum status {
-  ORDERED
+enum transactionStatus {
+  PENDING
   CONFIRMED
   DELIVERED
   FINISHED
+}
+
+enum adminApproval {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model Seller {
@@ -31,15 +37,15 @@ model Seller {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  username     String
-  email        String        @unique
-  password     String
-  leaderboard  Leaderboard?
+  id       Int    @id @default(autoincrement())
+  username String
+  email    String @unique
+  password String
+  points   Int    @default(0)
   reviews      Review[]
   transactions Transaction[]
   addresses    Address[]
-  vouchers  Voucher[]
+  vouchers     Voucher[]
 }
 
 model Admin {
@@ -58,20 +64,13 @@ model Product {
   avg_rating   Float
   certificates String
   stock        Int
+  status       adminApproval @default(PENDING)
   adminId      Int?
   admin        Admin?        @relation(fields: [adminId], references: [id])
   sellerId     Int
   seller       Seller        @relation(fields: [sellerId], references: [id])
   reviews      Review[]
   Transaction  Transaction[]
-}
-
-model Leaderboard {
-  userId    Int      @id
-  score     Float
-  username  String
-  updatedAt DateTime
-  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Review {
@@ -88,7 +87,7 @@ model Transaction {
   id           Int      @id @default(autoincrement())
   purchaseDate DateTime
   amount       Float
-  status       status
+  status       transactionStatus
   userId       Int
   user         User     @relation(fields: [userId], references: [id])
   productId    Int
@@ -106,10 +105,10 @@ model Address {
 }
 
 model Voucher {
-  id        Int       @id @default(autoincrement())
-  code      String    @unique
-  userId    Int
-  user      User      @relation(fields: [userId], references: [id])
-  createdAt DateTime  @default(now())
+  id         Int      @id @default(autoincrement())
+  code       String   @unique
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
   isRedeemed Boolean  @default(false)
 }
