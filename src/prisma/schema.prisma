@@ -39,7 +39,7 @@ model User {
   reviews      Review[]
   transactions Transaction[]
   addresses    Address[]
-  vouchers     Voucher[]     @relation("UserVouchers")
+  vouchers  Voucher[]
 }
 
 model Admin {
@@ -106,8 +106,10 @@ model Address {
 }
 
 model Voucher {
-  id       Int    @id @default(autoincrement())
-  code     String @unique // Unique voucher code
-  discount Float
-  users    User[] @relation("UserVouchers") // Many-to-many relation with User
+  id        Int       @id @default(autoincrement())
+  code      String    @unique
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  isRedeemed Boolean  @default(false)
 }
