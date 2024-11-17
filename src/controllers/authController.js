@@ -4,6 +4,12 @@ const jwt = require("jsonwebtoken");
 
 const prisma = new PrismaClient();
 
+const generateJWTToken = (userId) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+    expiresIn: "6h",
+  });
+};
+
 const productController = {
   registerUser: async (req, res) => {
     try {
@@ -86,27 +92,16 @@ const productController = {
       const user = await prisma.user.findUnique({
         where: { email },
       });
-
-      if (!user) {
-        return res.status(404).json({
-          message: "user doesn't exist",
-        });
-      }
-
+      
       const isPasswordValid = await bcrypt.compare(password, user.password);
-
-      if (!isPasswordValid) {
-        res.status(401).json({
-          message: "password incorrect",
+      
+      if (!user || !isPasswordValid ) {
+        return res.status(401).json({
+          message: "email or password incorrect",
         });
       }
 
-      //generate JWT token
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: `1h` }
-      );
+      const token = generateJWTToken(user.id);
 
       res.status(200).json({
         Token: token,
