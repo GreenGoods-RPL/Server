@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const { findTransaction, increaseSellerIncome, increaseUserPoints } = require("../util/user");
 
 const userController = {
   addAddress: async (req, res) => {
@@ -80,6 +81,45 @@ const userController = {
     }
   },
 
+  purchaseProduct: async (req, res) => {
+    try {
+      const { userId } = req.user;
+      const { productId, amount } = req.body;
+
+      // Verify product exists
+      const product = await prisma.product.findUnique({
+        where: { id: parseInt(productId) },
+      });
+
+      if (!product) {
+        return res.status(404).json({
+          message: "Product not found",
+        });
+      }
+
+      // Create new transaction
+      const newTransaction = await prisma.transaction.create({
+        data: {
+          userId: parseInt(userId),
+          productId: parseInt(productId),
+          amount,
+          purchaseDate: new Date(),
+          status: "PENDING",
+        },
+      });
+
+      res.status(200).json({
+        message: `Successfully purchased product with id: ${productId}`,
+        transaction: newTransaction,
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(400).json({
+        message: "Failed to purchase product",
+      });
+    }
+  },
+
   //View Transactions
   viewTransactions: async (req, res) => {
     try {
@@ -114,6 +154,41 @@ const userController = {
     } catch (error) {
       res.status(404).json({
         message: "User with id 1 does not exist",
+      });
+    }
+  },
+
+  completeTransaction: async (req, res) => {
+    try {
+      const { userId } = req.user;
+      const { transactionId } = req.params;
+
+      // Verify transaction exists and belongs to user
+      const transaction = await findTransaction(transactionId, userId);
+
+      // Update transaction status to finished
+      await prisma.transaction.update({
+        where: {
+          id: parseInt(transactionId),
+        },
+        data: {
+          status: "FINISHED",
+        },
+      });
+
+      // Increase user points by 1
+      await increaseUserPoints(userId);
+
+      // Increase seller income by product price
+      await increaseSellerIncome(transaction.productId, transaction.amount);
+
+      res.status(200).json({
+        message: `Successfully completed transaction with id: ${transactionId}`,
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(400).json({
+        message: `Failed to complete transaction with id: ${transactionId}`,
       });
     }
   },
