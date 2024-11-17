@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const { validateStatusFlow, validateTransactionStatus, findTransaction } = require("../util/seller");
 const prisma = new PrismaClient();
 
 const sellerController = {
@@ -56,6 +57,62 @@ const sellerController = {
       });
 
       res.status(200).json(orders);
+    } catch (error) {
+      res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  },
+
+  updateTransactionStatus: async (req, res) => {
+    try {
+      const { transactionId, status } = req.body;
+
+      // Fetch current transaction status
+      const transaction = await findTransaction(transactionId);
+      // Validate status
+      await validateTransactionStatus(status);
+      // Validate status transition
+      await validateStatusFlow(transaction.status, status);
+
+      // Update transaction status
+      const updatedTransaction = await prisma.transaction.update({
+        where: {
+          id: parseInt(transactionId),
+        },
+        data: {
+          status: status,
+        },
+      });
+
+      res.status(200).json(updatedTransaction);
+    } catch (error) {
+      res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  },
+
+  deliverOrder: async (req, res) => {
+    try {
+      const { transactionId } = req.body;
+
+      // Fetch current transaction status
+      const transaction = await findTransaction(transactionId);
+      // Validate status transition
+      await validateStatusFlow(transaction.status, status);
+
+      // Update transaction status to delivered
+      const updatedTransaction = await prisma.transaction.update({
+        where: {
+          id: parseInt(transactionId),
+        },
+        data: {
+          status: "delivered",
+        },
+      });
+
+      res.status(200).json(updatedTransaction);
     } catch (error) {
       res.status(500).json({
         message: "Internal server error",
