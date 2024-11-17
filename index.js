@@ -8,6 +8,7 @@ const sellerRoute = require("./src/routes/sellerRoute");
 const userRoute = require("./src/routes/userRoute");
 const productRoute = require("./src/routes/productRoute");
 const leaderboardRoutes = require("./src/routes/leaderboardRoute");
+const leaderboardController = require("./src/controllers/leaderboardController");
 
 const app = express();
 

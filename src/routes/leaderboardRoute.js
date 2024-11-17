@@ -1,6 +1,6 @@
 const express = require("express");
-const leaderboardController = require("../controllers/leaderboardController");
 const router = express.Router();
+const leaderboardController = require("../controllers/leaderboardController");
 
 router.get("/", leaderboardController.getLeaderboard);
 
