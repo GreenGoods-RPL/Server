@@ -26,7 +26,6 @@ const authController = {
 
       res.status(201).json({ message: `User created with ID: ${newUser.id}` });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ message: "Internal server error" });
     }
   },
@@ -52,7 +51,6 @@ const authController = {
 
       res.status(201).json({ message: `Seller created with ID: ${newSeller.id}` });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ message: "Internal server error" });
     }
   },
@@ -74,7 +72,6 @@ const authController = {
 
       res.status(200).json({ token, message: "Login successful" });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ message: "Internal server error" });
     }
   },
