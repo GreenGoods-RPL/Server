@@ -4,28 +4,22 @@ const prisma = new PrismaClient();
 const sellerController = {
   viewProfile: async (req, res) => {
     try {
-      const { sellerId } = req.params;
+      const { userId } = req.user;
 
       // Find seller by ID
       const seller = await prisma.seller.findUnique({
         where: {
-          id: parseInt(sellerId),
+          id: parseInt(userId),
         },
         select: {
           id: true,
           username: true,
           email: true,
-          password: true,
+          password: false,
           reputation: true,
           income: true,
         },
       });
-
-      if (!seller) {
-        return res.status(404).json({
-          message: "Seller not found",
-        });
-      }
 
       res.status(200).json(seller);
     } catch (error) {
@@ -38,12 +32,12 @@ const sellerController = {
   //View Seller Orders
   viewOrders: async (req, res) => {
     try {
-      const { sellerId } = req.params;
+      const { userId } = req.user;
 
       // Verify seller exists
       const seller = await prisma.seller.findUnique({
         where: {
-          id: parseInt(sellerId),
+          id: parseInt(userId),
         },
       });
 
@@ -57,7 +51,7 @@ const sellerController = {
       const orders = await prisma.transaction.findMany({
         where: {
           product: {
-            sellerId: parseInt(sellerId),
+            userId: parseInt(userId),
           },
         },
         select: {
