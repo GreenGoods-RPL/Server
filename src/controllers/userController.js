@@ -117,6 +117,33 @@ const userController = {
       });
     }
   },
+
+  redeemVoucher: async (req, res) => {
+    const { userId, code } = req.body;
+  
+    try {
+      const voucher = await prisma.voucher.findFirst({
+        where: { code, userId, isRedeemed: false },
+      });
+  
+      if (!voucher) {
+        return res.status(404).json({ error: "Voucher not found or already redeemed." });
+      }
+  
+      if (new Date() > voucher.expiresAt) {
+        return res.status(400).json({ error: "Voucher has expired." });
+      }
+  
+      await prisma.voucher.update({
+        where: { id: voucher.id },
+        data: { isRedeemed: true },
+      });
+  
+      res.json({ message: "Voucher redeemed successfully!" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
 };
 
 module.exports = userController;
