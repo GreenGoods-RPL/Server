@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const authMiddleware = require('../middleware/authMiddleware');
 
-router.post('/:userId/address', userController.addAddress);
-router.delete('/:userId/address/:addressId', userController.deleteAddress);
-router.get('/:userId/transactions', userController.viewTransactions);
+router.use(authMiddleware());
+router.post('/addAddress', userController.addAddress);
+router.delete('/deleteAddress/:addressId', userController.deleteAddress);
+router.get('/transactions', userController.viewTransactions);
 
 module.exports = router;

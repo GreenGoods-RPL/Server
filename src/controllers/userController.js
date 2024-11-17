@@ -4,7 +4,8 @@ const prisma = new PrismaClient();
 const userController = {
   addAddress: async (req, res) => {
     try {
-      const { userId } = req.params;
+      const { userId } = req.user;
+      
       //postalCode sesuai database
       const { street, city, country, postalCode } = req.body;
 
@@ -44,9 +45,9 @@ const userController = {
 
   //Delete Address
   deleteAddress: async (req, res) => {
-    console.log("Delete address request received");
     try {
-      const { userId, addressId } = req.params;
+      const { userId } = req.user;
+      const { addressId } = req.params;
 
       //Verify address exists and belongs to user
       const address = await prisma.address.findFirst({
@@ -58,7 +59,7 @@ const userController = {
 
       if (!address) {
         return res.status(404).json({
-          message: `Failed to delete address with id : ${addressId}`,
+          message: `Address not found with id : ${addressId}`,
         });
       }
 
@@ -82,7 +83,7 @@ const userController = {
   //View Transactions
   viewTransactions: async (req, res) => {
     try {
-      const { userId } = req.params;
+      const { userId } = req.user;
 
       // Verify user exists
       const user = await prisma.user.findUnique({
