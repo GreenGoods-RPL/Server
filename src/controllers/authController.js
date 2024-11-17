@@ -1,14 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const { generateJWTToken } = require("../util/auth");
+const { hashPassword, comparePassword } = require("../util/auth");
 
 const prisma = new PrismaClient();
-
-const generateJWTToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: "6h",
-  });
-};
 
 const productController = {
   registerUser: async (req, res) => {
@@ -27,7 +21,7 @@ const productController = {
       }
 
       //hash password agar privasi user terjaga
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await hashPassword(password);
 
       //Bikin user baru
       const newUser = await prisma.user.create({
@@ -62,7 +56,7 @@ const productController = {
           message: "email already been used",
         });
       }
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await hashPassword(password);
 
       //new seller
       const newSeller = await prisma.seller.create({
@@ -93,7 +87,7 @@ const productController = {
         where: { email },
       });
       
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await comparePassword(password, user.password);
       
       if (!user || !isPasswordValid ) {
         return res.status(401).json({
