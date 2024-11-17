@@ -102,13 +102,13 @@ const sellerController = {
       // Validate status transition
       await validateStatusFlow(transaction.status, status);
 
-      // Update transaction status to delivered
+      // Update transaction status to DELIVERED
       const updatedTransaction = await prisma.transaction.update({
         where: {
           id: parseInt(transactionId),
         },
         data: {
-          status: "delivered",
+          status: "DELIVERED",
         },
       });
 
