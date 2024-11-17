@@ -86,16 +86,15 @@ const productController = {
       const user = await prisma.user.findUnique({
         where: { email },
       });
-      
       const isPasswordValid = await comparePassword(password, user.password);
       
-      if (!user || !isPasswordValid ) {
+      if (!user || !isPasswordValid) {
         return res.status(401).json({
           message: "email or password incorrect",
         });
       }
 
-      const token = generateJWTToken(user.id);
+      const token = generateJWTToken(user.id, user.email);
 
       res.status(200).json({
         Token: token,

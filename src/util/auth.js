@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-const generateJWTToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+const generateJWTToken = (userId, email) => {
+  return jwt.sign({ userId, email }, process.env.JWT_SECRET, {
     expiresIn: "6h",
   });
 };
