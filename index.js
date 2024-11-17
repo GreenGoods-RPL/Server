@@ -1,9 +1,10 @@
+require("dotenv").config();
+require('module-alias/register')
 const express = require("express");
 const morgan = require("morgan");
 const cron = require("node-cron");
-require("dotenv").config();
 
-const authRoute = require('./src/routes/authRoute');
+const authRoute = require('@src/routes/authRoute');
 const sellerRoute = require("./src/routes/sellerRoute");
 const userRoute = require("./src/routes/userRoute");
 const productRoute = require("./src/routes/productRoute");
