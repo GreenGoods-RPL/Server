@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const { findProduct } = require("../util/admin");
 
 const adminController = {
   //Get All New Products
@@ -8,18 +9,18 @@ const adminController = {
       // Get all products that haven't been reviewed by admin (admin_id is null)
       const newProducts = await prisma.product.findMany({
         where: {
-          admin_id: null,
+          status: "PENDING",
         },
         select: {
           product_id: true,
           name: true,
           price: true,
           description: true,
-          eco_score: true,
+          green_score: true,
           avg_rating: true,
           certificates: true,
-          admin_id: true,
-          seller_id: true,
+          sellerId: true,
+          status: true,
         },
       });
 
@@ -34,21 +35,11 @@ const adminController = {
   //Accept New Product
   acceptNewProduct: async (req, res) => {
     try {
+      const { adminId } = req.user; 
       const { productId } = req.params;
-      const { adminId } = req.body; // Assuming we get adminId from authenticated session
 
       // Find product
-      const product = await prisma.product.findUnique({
-        where: {
-          id: parseInt(productId),
-        },
-      });
-
-      if (!product) {
-        return res.status(404).json({
-          message: "Failed to accept product with id: 1",
-        });
-      }
+      await findProduct(productId);
 
       // Update product with admin approval
       await prisma.product.update({
@@ -56,7 +47,7 @@ const adminController = {
           id: parseInt(productId),
         },
         data: {
-          admin_id: adminId,
+          adminId: adminId,
           status: "APPROVED",
         },
       });
@@ -77,17 +68,7 @@ const adminController = {
       const { productId } = req.params;
 
       // Find product
-      const product = await prisma.product.findUnique({
-        where: {
-          id: parseInt(productId),
-        },
-      });
-
-      if (!product) {
-        return res.status(404).json({
-          message: "Failed to reject product with id: 1",
-        });
-      }
+      await findProduct(productId);
 
       // Delete or mark product as rejected
       await prisma.product.update({
