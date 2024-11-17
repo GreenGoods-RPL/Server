@@ -3,7 +3,6 @@ const prisma = new PrismaClient();
 
 const sellerMiddleware = async (req, res, next) => {
   const { email } = req.user;
-  console.log('Email: ', email);
   
   try {
     const seller = await prisma.seller.findUnique({

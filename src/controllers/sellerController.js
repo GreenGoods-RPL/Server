@@ -29,44 +29,36 @@ const sellerController = {
     }
   },
 
-  //View Seller Orders
   viewOrders: async (req, res) => {
     try {
       const { userId } = req.user;
 
-      // Verify seller exists
-      const seller = await prisma.seller.findUnique({
-        where: {
-          id: parseInt(userId),
-        },
-      });
-
-      if (!seller) {
-        return res.status(404).json({
-          message: "Seller with id 1 does not exist",
-        });
-      }
-
-      // Get all orders for the seller's products
+      // Get all transactions for the seller's products
       const orders = await prisma.transaction.findMany({
         where: {
           product: {
-            userId: parseInt(userId),
+            sellerId: parseInt(userId),
           },
         },
         select: {
-          user_id: true,
-          product_id: true,
-          purchase_date: true,
+          id: true,
+          userId: true,
+          productId: true,
+          purchaseDate: true,
           amount: true,
           status: true,
+          product: {
+            select: {
+              sellerId: true,
+            },
+          },
         },
       });
 
       res.status(200).json(orders);
     } catch (error) {
-      res.status(404).json({
-        message: "Seller with id 1 does not exist",
+      res.status(500).json({
+        message: "Internal server error",
       });
     }
   },
