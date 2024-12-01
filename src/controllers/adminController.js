@@ -12,7 +12,7 @@ const adminController = {
           status: "PENDING",
         },
         select: {
-          product_id: true,
+          id: true,
           name: true,
           price: true,
           description: true,
@@ -23,6 +23,7 @@ const adminController = {
           status: true,
         },
       });
+
 
       res.status(200).json(newProducts);
     } catch (error) {
@@ -35,8 +36,11 @@ const adminController = {
   //Accept New Product
   acceptNewProduct: async (req, res) => {
     try {
-      const { adminId } = req.user; 
+      const { userId } = req.user; 
       const { productId } = req.params;
+      console.log("user ", req.user);
+      console.log("admin id ", userId);
+      
 
       // Find product
       await findProduct(productId);
@@ -47,7 +51,7 @@ const adminController = {
           id: parseInt(productId),
         },
         data: {
-          adminId: adminId,
+          adminId: userId,
           status: "APPROVED",
         },
       });

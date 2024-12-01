@@ -6,7 +6,8 @@ const sellerMiddleware = require('../middleware/sellerMiddleware');
 
 router.get('/', productController.getProducts);
 router.get('/:id', productController.getProductById);
-router.get('/search', );
+router.get('/search', productController.searchProducts);
+router.get('/filter', productController.filterProducts);
 
 router.use(authMiddleware());
 router.use(sellerMiddleware);

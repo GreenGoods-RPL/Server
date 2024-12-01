@@ -5,7 +5,16 @@ const productController = {
   createProduct: async (req, res) => {
     try {
       const { name, price, description, green_score, certificates, stock } = req.body;
+      const sellerId = req.seller.id;
+  
+      if (!sellerId) {
+        return res.status(400).json({ error: "sellerId is required" });
+      }
 
+      if(green_score < 0 || green_score > 5) {
+        return res.status(400).json({ error: "Green score must be between 0 and 5" });
+      }
+  
       const newProduct = await prisma.product.create({
         data: {
           name,
@@ -15,11 +24,15 @@ const productController = {
           certificates,
           stock,
           avg_rating: 0,
-          adminId: null
+          status: "PENDING", // Explicitly set default status, if needed
+          adminId: null,
+          sellerId, // Include sellerId
         },
       });
+
       res.status(201).json(newProduct);
     } catch (error) {
+      console.error(error); // Log the actual error for debugging
       res.status(500).json({ error: "Failed to create product" });
     }
   },
@@ -99,6 +112,40 @@ const productController = {
 
   searchProducts: async (req, res) => {
     try {
+      const { keyword } = req.query;
+
+      if (!keyword || keyword.trim() === "") {
+        return res.status(400).json({ error: "Keyword is required for search" });
+      }
+
+      const products = await prisma.product.findMany({
+        where: {
+          status: "APPROVED", // Ensure only approved products are returned
+          OR: [
+            {
+              name: {
+                contains: keyword,
+                mode: "insensitive", // Case-insensitive search
+              },
+            },
+            {
+              description: {
+                contains: keyword,
+                mode: "insensitive",
+              },
+            },
+          ],
+        },
+      });
+
+      res.status(200).json(products);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search for products" });
+    }
+  },
+
+  filterProducts: async (req, res) => {
+    try {
       const { maxPrice, minPrice, rating, minEcoScore } = req.query;
 
       const products = await prisma.product.findMany({
@@ -118,7 +165,7 @@ const productController = {
 
       res.status(200).json(products);
     } catch (error) {
-      res.status(500).json({ error: "Failed to search products" });
+      res.status(500).json({ error: "Failed to filter products" });
     }
   }
 };

@@ -52,7 +52,17 @@ describe("Admin Controller", () => {
 
       expect(mockPrisma.product.findMany).toHaveBeenCalledWith({
         where: { status: "PENDING" },
-        select: expect.any(Object),
+        select: {
+          product_id: true,
+          name: true,
+          price: true,
+          description: true,
+          green_score: true,
+          avg_rating: true,
+          certificates: true,
+          sellerId: true,
+          status: true,
+        },
       });
       expect(mockRes.status).toHaveBeenCalledWith(200);
       expect(mockRes.json).toHaveBeenCalledWith(mockProducts);
@@ -78,7 +88,7 @@ describe("Admin Controller", () => {
       await adminController.acceptNewProduct(mockReq, mockRes);
 
       expect(mockPrisma.product.update).toHaveBeenCalledWith({
-        where: { id: parseInt(mockReq.params.productId) },
+        where: { id: parseInt(mockReq.params.productId, 10) },
         data: { adminId: mockReq.user.adminId, status: "APPROVED" },
       });
       expect(mockRes.status).toHaveBeenCalledWith(200);
@@ -93,9 +103,9 @@ describe("Admin Controller", () => {
       await adminController.acceptNewProduct(mockReq, mockRes);
 
       expect(mockPrisma.product.update).toHaveBeenCalled();
-      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.status).toHaveBeenCalledWith(500);
       expect(mockRes.json).toHaveBeenCalledWith({
-        message: "Failed to accept product with id: 1",
+        message: "Internal server error while accepting the product",
       });
     });
   });
@@ -107,7 +117,7 @@ describe("Admin Controller", () => {
       await adminController.rejectNewProduct(mockReq, mockRes);
 
       expect(mockPrisma.product.update).toHaveBeenCalledWith({
-        where: { id: parseInt(mockReq.params.productId) },
+        where: { id: parseInt(mockReq.params.productId, 10) },
         data: { status: "REJECTED" },
       });
       expect(mockRes.status).toHaveBeenCalledWith(200);
@@ -122,9 +132,9 @@ describe("Admin Controller", () => {
       await adminController.rejectNewProduct(mockReq, mockRes);
 
       expect(mockPrisma.product.update).toHaveBeenCalled();
-      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.status).toHaveBeenCalledWith(500);
       expect(mockRes.json).toHaveBeenCalledWith({
-        message: "Failed to reject product with id: 1",
+        message: "Internal server error while rejecting the product",
       });
     });
   });

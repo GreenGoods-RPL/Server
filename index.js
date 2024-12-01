@@ -3,6 +3,7 @@ require('module-alias/register')
 const express = require("express");
 const morgan = require("morgan");
 const cron = require("node-cron");
+const cors = require("cors");
 
 const authRoute = require('@src/routes/authRoute');
 const sellerRoute = require("./src/routes/sellerRoute");
@@ -13,7 +14,15 @@ const reviewRoutes = require("./src/routes/reviewRoute");
 const adminRoute = require("./src/routes/adminRoute");
 const leaderboardController = require("./src/controllers/leaderboardController");
 
+const PORT = process.env.PORT || 8008;
+
 const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:3000', // Replace with your front-end origin
+  methods: ['GET', 'POST'],       // Allow specific HTTP methods
+  credentials: true               // Allow cookies and credentials
+}));
 
 app.use(express.json());
 app.use(morgan("combined"));
@@ -33,6 +42,6 @@ app.use((req, res) => {
     res.status(404).json({message:"404 Not Found"});
 });
 
-app.listen(process.env.PORT, () => {
-    console.log("Server is running 🚀");
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT} 🚀`);
 })
