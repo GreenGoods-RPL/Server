@@ -38,9 +38,6 @@ const adminController = {
     try {
       const { userId } = req.user; 
       const { productId } = req.params;
-      console.log("user ", req.user);
-      console.log("admin id ", userId);
-      
 
       // Find product
       await findProduct(productId);

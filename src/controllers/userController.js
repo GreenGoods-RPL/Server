@@ -3,6 +3,37 @@ const prisma = new PrismaClient();
 const { findTransaction, increaseSellerIncome, increaseUserPoints } = require("../util/user");
 
 const userController = {
+  viewProfile: async (req, res) => {
+    try {
+      const { userId } = req.user;
+
+      // Verify user exists
+      const user = await prisma.user.findUnique({
+        where: { id: parseInt(userId) },
+        select: {
+          id: false,
+          username: true,
+          email: true,
+          points: true,
+          password: false,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(400).json({
+        message: "Failed to retrieve user profile",
+      });
+    }
+  },
+  
   addAddress: async (req, res) => {
     try {
       const { userId } = req.user;
@@ -132,7 +163,7 @@ const userController = {
 
       if (!user) {
         return res.status(404).json({
-          message: "User with id 1 does not exist",
+          message: `User with id ${id} does not exist`,
         });
       }
 
