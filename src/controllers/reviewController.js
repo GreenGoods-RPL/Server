@@ -2,28 +2,23 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const reviewController = {
-  // Get reviews for a specific product/course
   getReviews: async (req, res) => {
     try {
-      const { productid } = req.params;
+      const { productId } = req.params;
       
-      const reviews = await prisma.course.findUnique({
+      const reviews = await prisma.review.findMany({
         where: {
-          id: parseInt(productid)
+          productId: parseInt(productId)
         },
         include: {
-          reviews: {
-            include: {
-              reviewer: {
-                select: {
-                  name: true,
-                  photoUrl: true
-                }
-              }
+          user: {
+            select: {
+              username: true // Include only the user's name
             }
           }
         }
       });
+  
 
       if (!reviews) {
         return res.status(404).json({ message: "Course not found" });
@@ -31,17 +26,8 @@ const reviewController = {
 
       // Format response 
       const response = {
-        courseId: reviews.id,
-        reviews: reviews.reviews.map(review => ({
-          reviewId: review.id,
-          reviewer: {
-            name: review.reviewer.name,
-            photoUrl: review.reviewer.photoUrl
-          },
-          rating: review.rating,
-          comment: review.comment,
-          date: review.createdAt.toISOString()
-        }))
+        productId,
+        reviews
       };
 
       return res.status(200).json(response);
@@ -51,47 +37,52 @@ const reviewController = {
     }
   },
 
-  // Buat review baru
   createReview: async (req, res) => {
     try {
-      // Check for authorization header
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const { courseId, rating, comment } = req.body;
-
-      // Validasi fields
-      if (!courseId || !rating || !comment) {
-        return res.status(400).json({ 
+      const { productId, rating, comment } = req.body;
+      const { userId } = req.user;
+      console.log(productId, rating, comment);
+      
+  
+      if (!productId || !rating || !comment) {
+        return res.status(400).json({
           message: "Failed to create review",
-          details: "Missing required fields" 
+          details: "Missing required fields",
         });
       }
-
-      // Validasi rating untuk range 1-5
+  
       if (rating < 1 || rating > 5) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Failed to create review",
-          details: "Rating must be between 1 and 5" 
+          details: "Rating must be between 1 and 5",
         });
       }
-
+  
       const newReview = await prisma.review.create({
         data: {
-          courseId: parseInt(courseId),
+          productId: parseInt(productId),
           rating,
           comment,
-          // You might want to get the reviewer ID from the token 
-          reviewerId: 1 //Ini datang dari authenticated user
-        }
+          userId,
+        },
       });
-
+  
+      const reviews = await prisma.review.findMany({
+        where: { productId: parseInt(productId) },
+        select: { rating: true },
+      });
+  
+      const totalRatings = reviews.reduce((sum, review) => sum + review.rating, 0);
+      const avgRating = totalRatings / reviews.length;
+  
+      await prisma.product.update({
+        where: { id: parseInt(productId) },
+        data: { avg_rating: avgRating },
+      });
+  
       return res.status(201).json({
-        message: `Successfully create new review with id:${newReview.id} on courseid:${courseId}`
+        message: `Successfully created new review with id:${newReview.id} on productId:${productId}`,
       });
-
     } catch (error) {
       console.error("Error creating review:", error);
       return res.status(400).json({ message: "Failed to create review" });

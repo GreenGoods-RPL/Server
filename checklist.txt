@@ -1,0 +1,42 @@
+# Checklist of Endpoints for GreenGoods Server
+
+1. **User Authentication**
+  - [X] POST /api/auth/register/user
+  - [X] POST /api/auth/register/seller
+  - [X] POST /api/auth/login
+
+2. **Admin**
+  - [ ] GET /api/admin/products
+  - [ ] PUT /api/admin/accept/:productId
+  - [ ] PUT /api/admin/reject/:productId
+
+3. **Leaderboard**
+  - [ ] GET /api/leaderboard/
+
+4. **User**
+  - [X] GET /api/user/
+  - [ ] GET /api/user/transactions
+  - [X] POST /api/user/purchase
+  - [ ] POST /api/user/completeTransaction
+  - [ ] POST /api/user/redeem
+  - [ ] POST /api/user/addAddress
+  - [ ] DELETE /api/user/deleteAddress/:addressId
+
+3. **Product Management**
+  - [X] GET /api/product/
+  - [X] GET /api/product/:id
+  - [ ] GET /api/product/search
+  - [ ] GET /api/product/filter
+  - [ ] POST /api/product/
+  - [ ] PUT /api/product/:id
+  - [ ] DELETE /api/product/:id
+
+4. **Review**
+  - [X] GET /api/review/:productId
+  - [X] POST /api/reivew/
+
+5. **Seller**
+  - [ ] GET /api/seller/viewProfile
+  - [ ] GET /api/seller/orders
+  - [ ] PUT /api/seller/acceptOrderStatus
+  - [ ] PUT /api/seller/deliverOrder

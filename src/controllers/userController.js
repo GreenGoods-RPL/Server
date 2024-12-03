@@ -7,7 +7,6 @@ const userController = {
     try {
       const { userId } = req.user;
 
-      // Verify user exists
       const user = await prisma.user.findUnique({
         where: { id: parseInt(userId) },
         select: {
@@ -116,8 +115,7 @@ const userController = {
     try {
       const { userId } = req.user;
       const { productId, amount } = req.body;
-
-      // Verify product exists
+     
       const product = await prisma.product.findUnique({
         where: { id: parseInt(productId) },
       });
@@ -128,7 +126,6 @@ const userController = {
         });
       }
 
-      // Create new transaction
       const newTransaction = await prisma.transaction.create({
         data: {
           userId: parseInt(userId),

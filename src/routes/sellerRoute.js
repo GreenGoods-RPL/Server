@@ -8,7 +8,7 @@ router.use(authMiddleware());
 router.use(sellerMiddleware);
 router.get("/viewProfile", sellerController.viewProfile);
 router.get("/orders", sellerController.viewOrders);
-router.get("/acceptOrderStatus", sellerController.updateTransactionStatus);
-router.get("/deliverOrder", sellerController.deliverOrder);
+router.put("/acceptOrderStatus", sellerController.updateTransactionStatus);
+router.put("/deliverOrder", sellerController.deliverOrder);
 
 module.exports = router;
