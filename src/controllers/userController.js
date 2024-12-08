@@ -1,6 +1,10 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { findTransaction, increaseSellerIncome, increaseUserPoints } = require("../util/user");
+const {
+  findTransaction,
+  increaseSellerIncome,
+  increaseUserPoints,
+} = require("../util/user");
 
 const userController = {
   viewProfile: async (req, res) => {
@@ -96,7 +100,7 @@ const userController = {
       });
     }
   },
-  
+
   addAddress: async (req, res) => {
     try {
       const { userId } = req.user;
@@ -164,7 +168,7 @@ const userController = {
     try {
       const { userId } = req.user;
       const { productId, amount } = req.body;
-     
+
       const product = await prisma.product.findUnique({
         where: { id: parseInt(productId) },
       });
@@ -201,7 +205,7 @@ const userController = {
   viewTransactions: async (req, res) => {
     try {
       const { userId } = req.user;
-      
+
       const transactions = await prisma.transaction.findMany({
         where: {
           userId: parseInt(userId),
@@ -228,15 +232,14 @@ const userController = {
     }
   },
 
-
   completeTransaction: async (req, res) => {
     try {
       const { userId } = req.user;
       const { transactionId } = req.params;
-      
+
       // Verify transaction exists and belongs to user
       const transaction = await findTransaction(transactionId, userId);
-      
+
       // Increase user points by 1
       await increaseUserPoints(userId);
 
@@ -265,26 +268,24 @@ const userController = {
   },
 
   redeemVoucher: async (req, res) => {
-    const { userId, code } = req.body;
-  
+    const { userId } = req.user;
+    const { code } = req.body;
+
     try {
       const voucher = await prisma.voucher.findFirst({
         where: { code, userId, isRedeemed: false },
       });
-  
+
       if (!voucher) {
-        return res.status(404).json({ error: "Voucher not found or already redeemed." });
+        return res
+          .status(404)
+          .json({ error: "Voucher not found or already redeemed." });
       }
-  
-      if (new Date() > voucher.expiresAt) {
-        return res.status(400).json({ error: "Voucher has expired." });
-      }
-  
-      await prisma.voucher.update({
+
+      await prisma.voucher.delete({
         where: { id: voucher.id },
-        data: { isRedeemed: true },
       });
-  
+
       res.json({ message: "Voucher redeemed successfully!" });
     } catch (error) {
       res.status(500).json({ error: error.message });

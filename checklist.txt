@@ -20,7 +20,7 @@
   - [X] GET /api/user/addresses
   - [X] POST /api/user/purchase
   - [X] POST /api/user/completeTransaction
-  - [ ] POST /api/user/redeem
+  - [X] POST /api/user/redeem
   - [X] POST /api/user/addAddress
   - [X] DELETE /api/user/deleteAddress/:addressId
 

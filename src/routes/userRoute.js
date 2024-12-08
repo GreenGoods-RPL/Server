@@ -10,8 +10,8 @@ router.get("/vouchers", userController.getVouchers);
 router.get("/addresses", userController.getAddresses);
 router.post("/purchase", userController.purchaseProduct);
 router.post("/completeTransaction/:transactionId", userController.completeTransaction);
-router.post("/redeem", userController.redeemVoucher);
 router.post("/addAddress", userController.addAddress);
+router.delete("/redeem", userController.redeemVoucher);
 router.delete("/deleteAddress/:addressId", userController.deleteAddress);
 
 module.exports = router;
