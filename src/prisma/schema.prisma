@@ -16,6 +16,7 @@ datasource db {
 enum transactionStatus {
   PENDING
   CONFIRMED
+  REJECTED
   DELIVERED
   FINISHED
 }

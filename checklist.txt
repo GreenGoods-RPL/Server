@@ -6,37 +6,39 @@
   - [X] POST /api/auth/login
 
 2. **Admin**
-  - [ ] GET /api/admin/products
-  - [ ] PUT /api/admin/accept/:productId
-  - [ ] PUT /api/admin/reject/:productId
+  - [X] GET /api/admin/products
+  - [X] PUT /api/admin/accept/:productId
+  - [X] PUT /api/admin/reject/:productId
 
 3. **Leaderboard**
   - [ ] GET /api/leaderboard/
 
 4. **User**
   - [X] GET /api/user/
-  - [ ] GET /api/user/transactions
+  - [X] GET /api/user/transactions
+  - [X] GET /api/user/vouchers
+  - [X] GET /api/user/addresses
   - [X] POST /api/user/purchase
-  - [ ] POST /api/user/completeTransaction
+  - [X] POST /api/user/completeTransaction
   - [ ] POST /api/user/redeem
-  - [ ] POST /api/user/addAddress
-  - [ ] DELETE /api/user/deleteAddress/:addressId
+  - [X] POST /api/user/addAddress
+  - [X] DELETE /api/user/deleteAddress/:addressId
 
 3. **Product Management**
   - [X] GET /api/product/
   - [X] GET /api/product/:id
-  - [ ] GET /api/product/search
-  - [ ] GET /api/product/filter
-  - [ ] POST /api/product/
-  - [ ] PUT /api/product/:id
-  - [ ] DELETE /api/product/:id
+  - [X] GET /api/product/search
+  - [X] GET /api/product/filter
+  - [X] POST /api/product/
+  - [X] PUT /api/product/:id
+  - [X] DELETE /api/product/:id
 
 4. **Review**
   - [X] GET /api/review/:productId
   - [X] POST /api/reivew/
 
 5. **Seller**
-  - [ ] GET /api/seller/viewProfile
-  - [ ] GET /api/seller/orders
-  - [ ] PUT /api/seller/acceptOrderStatus
-  - [ ] PUT /api/seller/deliverOrder
+  - [X] GET /api/seller/
+  - [X] GET /api/seller/orders
+  - [X] GET /api/seller/products
+  - [X] PUT /api/seller/acceptOrderStatus

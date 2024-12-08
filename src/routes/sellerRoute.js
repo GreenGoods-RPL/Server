@@ -6,9 +6,9 @@ const sellerMiddleware = require("../middleware/sellerMiddleware");
 
 router.use(authMiddleware());
 router.use(sellerMiddleware);
-router.get("/viewProfile", sellerController.viewProfile);
 router.get("/orders", sellerController.viewOrders);
-router.put("/acceptOrderStatus", sellerController.updateTransactionStatus);
-router.put("/deliverOrder", sellerController.deliverOrder);
+router.get("/products", sellerController.getProductBySellerId);
+router.get("/", sellerController.viewProfile);
+router.put("/updateTransaction", sellerController.updateTransactionStatus);
 
 module.exports = router;

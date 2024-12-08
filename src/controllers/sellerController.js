@@ -1,6 +1,10 @@
 const { PrismaClient } = require("@prisma/client");
-const { validateStatusFlow, validateTransactionStatus, findTransaction } = require("../util/seller");
 const prisma = new PrismaClient();
+const {
+  validateStatusFlow,
+  validateTransactionStatus,
+  findTransaction,
+} = require("../util/seller");
 
 const sellerController = {
   viewProfile: async (req, res) => {
@@ -43,24 +47,48 @@ const sellerController = {
         },
         select: {
           id: true,
-          userId: true,
-          productId: true,
           purchaseDate: true,
           amount: true,
           status: true,
+          user: {
+            select: {
+              username: true, // Fetch the customer's name
+            },
+          },
           product: {
             select: {
-              sellerId: true,
+              name: true, // Fetch the product name
+              price: true, // Fetch the product price
             },
           },
         },
       });
 
-      res.status(200).json(orders);
+      // Calculate total price for each order
+      const ordersWithTotalPrice = orders.map((order) => ({
+        ...order,
+        totalPrice: order.product.price * order.amount, // Add total price
+      }));
+
+      res.status(200).json(ordersWithTotalPrice);
     } catch (error) {
+      console.error("Error fetching orders:", error);
       res.status(500).json({
         message: "Internal server error",
       });
+    }
+  },
+
+  getProductBySellerId: async (req, res) => {
+    try {
+      const { userId } = req.user;
+      const product = await prisma.product.findMany({
+        where: { sellerId: parseInt(userId) },
+      });
+
+      res.status(200).json(product);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to retrieve product" });
     }
   },
 
@@ -70,10 +98,17 @@ const sellerController = {
 
       // Fetch current transaction status
       const transaction = await findTransaction(transactionId);
+      if (!transaction) {
+        return res.status(404).json({
+          message: "Transaction not found",
+        });
+      }
+
       // Validate status
-      await validateTransactionStatus(status);
+      validateTransactionStatus(status);
+
       // Validate status transition
-      await validateStatusFlow(transaction.status, status);
+      validateStatusFlow(transaction.status, status);
 
       // Update transaction status
       const updatedTransaction = await prisma.transaction.update({
@@ -87,36 +122,17 @@ const sellerController = {
 
       res.status(200).json(updatedTransaction);
     } catch (error) {
-      res.status(500).json({
-        message: "Internal server error",
-      });
-    }
-  },
-
-  deliverOrder: async (req, res) => {
-    try {
-      const { transactionId } = req.body;
-
-      // Fetch current transaction status
-      const transaction = await findTransaction(transactionId);
-      // Validate status transition
-      await validateStatusFlow(transaction.status, status);
-
-      // Update transaction status to DELIVERED
-      const updatedTransaction = await prisma.transaction.update({
-        where: {
-          id: parseInt(transactionId),
-        },
-        data: {
-          status: "DELIVERED",
-        },
-      });
-
-      res.status(200).json(updatedTransaction);
-    } catch (error) {
-      res.status(500).json({
-        message: "Internal server error",
-      });
+      if (error.statusCode) {
+        // Custom validation error
+        res.status(error.statusCode).json({
+          message: error.message,
+        });
+      } else {
+        // Unexpected error
+        res.status(500).json({
+          message: "Internal server error",
+        });
+      }
     }
   },
 };

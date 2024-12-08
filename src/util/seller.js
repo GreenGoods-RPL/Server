@@ -1,34 +1,38 @@
-exports.validateTransactionStatus = async (status) => {
-  const validStatuses = ["ACCEPTED", "REJECTED"];
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+class ValidationError extends Error {
+  constructor(message, statusCode = 400) {
+    super(message);
+    this.name = "ValidationError";
+    this.statusCode = statusCode;
+  }
+}
+
+exports.validateTransactionStatus = (status) => {
+  const validStatuses = ["CONFIRMED", "REJECTED", "DELIVERED"];
   if (!validStatuses.includes(status)) {
-    return res.status(400).json({
-      message: "Invalid status",
-    });
+    throw new ValidationError("Invalid status");
   }
 };
 
-exports.validateStatusFlow = async (currentStatus, status) => {
+exports.validateStatusFlow = (currentStatus, status) => {
   // Validate status transitions
-  if (currentStatus === "REJECTED" && status === "ACCEPTED") {
-    return res.status(400).json({
-      message: "Cannot accept a REJECTED transaction",
-    });
+  if (currentStatus === "REJECTED" && status === "CONFIRMED") {
+    throw new ValidationError("Cannot accept a REJECTED transaction");
   }
 
   if (
     currentStatus === "DELIVERED" &&
-    (status === "ACCEPTED" || status === "REJECTED")
+    (status === "CONFIRMED" || status === "REJECTED")
   ) {
-    return res.status(400).json({
-      message: "Cannot change the status of a DELIVERED transaction",
-    });
+    throw new ValidationError(
+      "Cannot change the status of a DELIVERED transaction"
+    );
   }
 
-  // Validate status transition
-  if (transaction.status === "REJECTED") {
-    return res.status(400).json({
-      message: "Cannot deliver a REJECTED transaction",
-    });
+  if (currentStatus === "REJECTED" && status === "DELIVERED") {
+    throw new ValidationError("Cannot deliver a REJECTED transaction");
   }
 };
 
@@ -37,16 +41,11 @@ exports.findTransaction = async (transactionId) => {
     where: {
       id: parseInt(transactionId),
     },
-    select: {
-      status: true,
-    },
   });
 
   if (!transaction) {
-    return res.status(404).json({
-      message: "Transaction not found",
-    });
+    throw new ValidationError("Transaction not found", 404);
   }
 
-  return transaction
+  return transaction;
 };

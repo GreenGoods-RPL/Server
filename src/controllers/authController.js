@@ -68,9 +68,7 @@ const authController = {
         return res.status(401).json({ message: "Email or password incorrect" });
       }
 
-      console.log("reputation: ", !!user.reputation);
-
-      const role = user.reputation ? "seller" : user.username ? "user" : "admin";
+      const role = (user.reputation !== undefined) ? "seller" : user.username ? "user" : "admin";
       const token = generateJWTToken(user.id, user.email, role);
 
       res.status(200).json({ token, message: "Login successful" });

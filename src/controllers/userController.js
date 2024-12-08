@@ -32,34 +32,83 @@ const userController = {
       });
     }
   },
+
+  getAddresses: async (req, res) => {
+    try {
+      const { userId } = req.user;
+
+      const addresses = await prisma.address.findMany({
+        where: {
+          userId: parseInt(userId),
+        },
+        select: {
+          id: true,
+          street: true,
+          city: true,
+          country: true,
+          postalCode: true,
+        },
+      });
+
+      if (addresses.length === 0) {
+        return res.status(404).json({
+          message: "No addresses found for the user",
+        });
+      }
+
+      res.status(200).json(addresses);
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({
+        message: "Failed to retrieve addresses",
+      });
+    }
+  },
+
+  getVouchers: async (req, res) => {
+    try {
+      const { userId } = req.user;
+
+      // Fetch all vouchers for the user
+      const vouchers = await prisma.voucher.findMany({
+        where: {
+          userId: parseInt(userId),
+        },
+        select: {
+          id: true,
+          code: true,
+          createdAt: true,
+          isRedeemed: true,
+        },
+      });
+
+      if (vouchers.length === 0) {
+        return res.status(404).json({
+          message: "No vouchers found for the user",
+        });
+      }
+
+      res.status(200).json(vouchers);
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({
+        message: "Failed to retrieve vouchers",
+      });
+    }
+  },
   
   addAddress: async (req, res) => {
     try {
       const { userId } = req.user;
-      
-      //postalCode sesuai database
       const { street, city, country, postalCode } = req.body;
 
-      // Verify user exists
-      const user = await prisma.user.findUnique({
-        where: { id: parseInt(userId) },
-      });
-
-      if (!user) {
-        return res.status(404).json({
-          message: "User not found",
-        });
-      }
-
-      // Create new address
-      const newAddress = await prisma.address.create({
+      await prisma.address.create({
         data: {
           userId: parseInt(userId),
           street,
           city,
           country,
-          //sesuaikan database
-          postalCode,
+          postalCode: parseInt(postalCode),
         },
       });
 
@@ -130,7 +179,7 @@ const userController = {
         data: {
           userId: parseInt(userId),
           productId: parseInt(productId),
-          amount,
+          amount: parseInt(amount),
           purchaseDate: new Date(),
           status: "PENDING",
         },
@@ -152,47 +201,47 @@ const userController = {
   viewTransactions: async (req, res) => {
     try {
       const { userId } = req.user;
-
-      // Verify user exists
-      const user = await prisma.user.findUnique({
-        where: { id: parseInt(userId) },
-      });
-
-      if (!user) {
-        return res.status(404).json({
-          message: `User with id ${id} does not exist`,
-        });
-      }
-
-      // Get all transactions for user
+      
       const transactions = await prisma.transaction.findMany({
         where: {
           userId: parseInt(userId),
         },
         select: {
-          user_id: true,
-          product_id: true,
-          purchase_date: true,
+          id: true,
+          purchaseDate: true,
           amount: true,
           status: true,
+          product: {
+            select: {
+              name: true,
+              price: true,
+            },
+          },
         },
       });
 
       res.status(200).json(transactions);
     } catch (error) {
-      res.status(404).json({
-        message: "User with id 1 does not exist",
+      res.status(500).json({
+        message: "Failed to fetch transactions",
       });
     }
   },
+
 
   completeTransaction: async (req, res) => {
     try {
       const { userId } = req.user;
       const { transactionId } = req.params;
-
+      
       // Verify transaction exists and belongs to user
       const transaction = await findTransaction(transactionId, userId);
+      
+      // Increase user points by 1
+      await increaseUserPoints(userId);
+
+      // Increase seller income by product price
+      await increaseSellerIncome(transaction.productId, transaction.amount);
 
       // Update transaction status to finished
       await prisma.transaction.update({
@@ -204,19 +253,13 @@ const userController = {
         },
       });
 
-      // Increase user points by 1
-      await increaseUserPoints(userId);
-
-      // Increase seller income by product price
-      await increaseSellerIncome(transaction.productId, transaction.amount);
-
       res.status(200).json({
         message: `Successfully completed transaction with id: ${transactionId}`,
       });
     } catch (error) {
       console.error("Error:", error);
       res.status(400).json({
-        message: `Failed to complete transaction with id: ${transactionId}`,
+        message: `Failed to complete transaction`,
       });
     }
   },

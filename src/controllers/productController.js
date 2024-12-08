@@ -4,25 +4,28 @@ const prisma = new PrismaClient();
 const productController = {
   createProduct: async (req, res) => {
     try {
-      const { name, price, description, green_score, certificates, stock } = req.body;
+      const { name, price, description, green_score, certificates, stock } =
+        req.body;
       const sellerId = req.seller.id;
-  
+
       if (!sellerId) {
         return res.status(400).json({ error: "sellerId is required" });
       }
 
-      if(green_score < 0 || green_score > 5) {
-        return res.status(400).json({ error: "Green score must be between 0 and 5" });
+      if (green_score < 0 || green_score > 5) {
+        return res
+          .status(400)
+          .json({ error: "Green score must be between 0 and 5" });
       }
-  
+
       const newProduct = await prisma.product.create({
         data: {
           name,
-          price,
+          price: parseFloat(price),
           description,
-          green_score,
+          green_score: parseInt(green_score),
           certificates,
-          stock,
+          stock: parseInt(stock),
           avg_rating: 0,
           status: "PENDING", // Explicitly set default status, if needed
           adminId: null,
@@ -57,15 +60,11 @@ const productController = {
         where: { id: parseInt(id) },
       });
 
-      if(!product) {
+      if (!product) {
         return res.status(404).json({ error: "Product not found" });
       }
 
-      if (product) {
-        res.status(200).json(product);
-      } else {
-        res.status(404).json({ error: "Product not found" });
-      }
+      res.status(200).json(product);
     } catch (error) {
       res.status(500).json({ error: "Failed to retrieve product" });
     }
@@ -74,7 +73,8 @@ const productController = {
   updateProduct: async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, price, description, green_score, certificates, stock } = req.body;
+      const { name, price, description, green_score, certificates, stock } =
+        req.body;
       const updatedProduct = await prisma.product.update({
         where: { id: parseInt(id) },
         data: {
@@ -96,13 +96,20 @@ const productController = {
   deleteProduct: async (req, res) => {
     try {
       const { id } = req.params;
-      await prisma.product.delete({
+
+      // Check if the product exists before deleting
+      const product = await prisma.product.findUnique({
         where: { id: parseInt(id) },
       });
 
       if (!product) {
         return res.status(404).json({ error: "Product not found" });
       }
+
+      // Proceed with deletion
+      await prisma.product.delete({
+        where: { id: parseInt(id) },
+      });
 
       res.status(204).send();
     } catch (error) {
@@ -115,17 +122,19 @@ const productController = {
       const { keyword } = req.query;
 
       if (!keyword || keyword.trim() === "") {
-        return res.status(400).json({ error: "Keyword is required for search" });
+        return res
+          .status(400)
+          .json({ error: "Keyword is required for search" });
       }
 
       const products = await prisma.product.findMany({
         where: {
-          status: "APPROVED", // Ensure only approved products are returned
+          status: "APPROVED", // Only include approved products
           OR: [
             {
               name: {
                 contains: keyword,
-                mode: "insensitive", // Case-insensitive search
+                mode: "insensitive", // Case-insensitive match
               },
             },
             {
@@ -134,8 +143,18 @@ const productController = {
                 mode: "insensitive",
               },
             },
+            {
+              certificates: {
+                contains: keyword,
+                mode: "insensitive", // Include certificate matches
+              },
+            },
           ],
         },
+        orderBy: [
+          { avg_rating: "desc" }, // Sort by highest rating
+          { green_score: "desc" }, // Then sort by green_score
+        ],
       });
 
       res.status(200).json(products);
@@ -167,7 +186,7 @@ const productController = {
     } catch (error) {
       res.status(500).json({ error: "Failed to filter products" });
     }
-  }
+  },
 };
 
 module.exports = productController;
