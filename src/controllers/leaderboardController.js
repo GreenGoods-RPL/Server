@@ -29,7 +29,6 @@ const leaderboardController = {
             data: {
               code: voucherCode,
               userId: user.id,
-              expiresAt: new Date(today.setMonth(today.getMonth() + 1)), // Expires in 1 month
             },
           });
 
@@ -52,7 +51,7 @@ const leaderboardController = {
     try {
       const leaderboard = await prisma.user.findMany({
         orderBy: { points: "desc" },
-        take: 10, // Top 10 users
+        take: 20,
       });
       res.json(leaderboard);
     } catch (error) {

@@ -11,7 +11,7 @@
   - [X] PUT /api/admin/reject/:productId
 
 3. **Leaderboard**
-  - [ ] GET /api/leaderboard/
+  - [X] GET /api/leaderboard/
 
 4. **User**
   - [X] GET /api/user/
